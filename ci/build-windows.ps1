@@ -1,8 +1,24 @@
 # Builds and tests both Windows VST3s (Knockbox + Knockbox Track).
-# Used by the GitHub Actions workflow. Output goes to dist\ (plugins) and pluginval-logs\.
+# Used by both the GitHub Actions workflow and GitLab CI. Output goes to dist\ (plugins) and pluginval-logs\.
 
-$ErrorActionPreference = "Stop"
+$ErrorActionPreference = "Continue"   # every step is checked explicitly below
 function Check([string]$what) { if ($LASTEXITCODE -ne 0) { Write-Error "$what failed (exit $LASTEXITCODE)"; exit 1 } }
+
+# 0) Machine info: some CI machines (e.g. GitLab's) are stripped-down Windows Server installs
+#    that lack graphics DLLs JUCE loads at startup. Print what is there, for diagnosis.
+$nt = Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion'
+Write-Output "Windows: $($nt.ProductName) / $($nt.InstallationType) / build $($nt.CurrentBuild)"
+foreach ($d in @("dcomp.dll","d2d1.dll","dwrite.dll","d3d11.dll","dxgi.dll","dwmapi.dll","opengl32.dll","glu32.dll","vfw32.dll","comctl32.dll","wininet.dll")) {
+  $present = Test-Path "$env:WINDIR\System32\$d"
+  Write-Output ("  {0,-14} {1}" -f $d, $(if ($present) { "present" } else { "MISSING" }))
+}
+
+# Load the graphics DLLs only when something actually draws ("delay-load"). JUCE's build tool
+# (juceaide) and the tests never draw, so they then also run on machines without those DLLs.
+# CMake picks this up for every program it links, including juceaide. On a normal PC nothing changes.
+$env:LDFLAGS = "/DELAYLOAD:dcomp.dll /DELAYLOAD:d2d1.dll /DELAYLOAD:dwrite.dll /DELAYLOAD:d3d11.dll " +
+               "/DELAYLOAD:dxgi.dll /DELAYLOAD:dwmapi.dll /DELAYLOAD:opengl32.dll /DELAYLOAD:glu32.dll " +
+               "/DELAYLOAD:vfw32.dll delayimp.lib /IGNORE:4199"
 
 # 1) Find Visual Studio and pick the matching CMake generator
 $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
