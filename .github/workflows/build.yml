@@ -1,0 +1,37 @@
+# Builds and tests both Windows VST3s on every push.
+# Download: Actions tab > latest run > "Knockbox-Windows-VST3" under Artifacts.
+
+name: Build Windows VST3
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build and test
+        shell: pwsh
+        run: ./ci/build-windows.ps1
+
+      - name: Upload plugins
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Knockbox-Windows-VST3
+          path: dist/
+          retention-days: 90
+
+      - name: Upload pluginval logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pluginval-logs
+          path: pluginval-logs/
+          if-no-files-found: ignore
+          retention-days: 30

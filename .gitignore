@@ -1,0 +1,6 @@
+build/
+dist/
+pluginval/
+pluginval.zip
+pluginval-logs/
+*.wav

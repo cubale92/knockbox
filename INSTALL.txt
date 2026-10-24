@@ -1,0 +1,14 @@
+KNOCKBOX by 8cee - install on Windows
+====================================
+
+1. Copy both folders, "Knockbox.vst3" and "Knockbox Track.vst3", to:
+       C:\Program Files\Common Files\VST3\
+
+2. Open your DAW (MPC software: Preferences > Plugins) and rescan plugins.
+
+3. Knockbox Track  -> on each track (kick, snare, sample, bass...)
+   Knockbox        -> LAST on your master bus
+
+Start with a preset: "Kick Knock" / "Snare Crack" / "Dusty Sample" on the tracks,
+"Default Knock" on the master. Then adjust Knock / Punch for the drums and
+Output on the master for loudness. The red line on the master's OUT meter is the ceiling.
