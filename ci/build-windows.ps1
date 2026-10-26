@@ -39,8 +39,8 @@ ctest --test-dir build -C Release --output-on-failure
 Check "DSP tests"
 
 $plugins = @(
-  @{ Path = "build\Knockbox_artefacts\Release\VST3\Knockbox.vst3";            Name = "Knockbox";       Presets = 7; Ceiling = 1 },
-  @{ Path = "build\KnockboxTrack_artefacts\Release\VST3\Knockbox Track.vst3"; Name = "Knockbox Track"; Presets = 6; Ceiling = 0 }
+  @{ Path = "build\Knockbox_artefacts\Release\VST3\Knockbox.vst3";            Name = "Knockbox";       Presets = 16; Ceiling = 1 },
+  @{ Path = "build\KnockboxTrack_artefacts\Release\VST3\Knockbox Track.vst3"; Name = "Knockbox Track"; Presets = 16; Ceiling = 0 }
 )
 
 # 3) Load each real .vst3 like a DAW does: scan, process, automate, presets, state, editor

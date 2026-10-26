@@ -13,7 +13,11 @@
 | **Knock** | Knock, Freq, Punch, Snap, Snap Hz | Body bump tuned to the sound (kick ~60–90 Hz, snare ~180–220 Hz) with a mud cut, transient Punch, and Snap for the crack. |
 | **Tape / Out** | Input, Tape, Output | Tape saturation on the single sound, plus gain in and out. |
 
-**Presets:** Clean, Kick Knock, Snare Crack, Dusty Sample, Bass Weight, Hats Tame.
+**Presets (16):**
+- *Drums:* Kick Knock, Kick Sub Boom, Snare Crack, Snare Fat Body, Rimshot Click, Hats Tame, Open Hat Air, Breakbeat Loop
+- *Samples & bass:* Dusty Sample, Jazz Keys Loop, Horn Stabs, Bass Weight, Filtered Bassline
+- *Vocals:* Vocal Chops, Telephone Vocal
+- *Start from scratch:* Clean
 On **Clean** the plugin does nothing except a 30 Hz low cut, so you can build from scratch.
 
 ## Knockbox (master bus)
@@ -26,7 +30,11 @@ On **Clean** the plugin does nothing except a 30 Hz low cut, so you can build fr
 | **Dust** | Dust, Vinyl | Rolls off the digital top end; Vinyl adds crackle and hiss. |
 | **Out** | Output, Ceiling, Clip, Mono, Mono Hz | Output gain into a clipper at the Ceiling (red line on the meter). Mono keeps everything below Mono Hz in the centre. |
 
-**Presets:** Default Knock, Dusty Basement, Hard Snare Crack, Thick Low End, Parallel Squash, Loud & Clipped, Gentle Polish.
+**Presets (16):**
+- *All-rounders:* Default Knock, Gentle Polish, Tight & Snappy, Radio Ready
+- *Dusty / lo-fi:* Dusty Basement, Jazz Loop Warmth, Late Night Mellow, Crunchy Tape, Demo Tape
+- *Low end:* Thick Low End, Heavy Kick Room, Filtered Bassline
+- *Compression:* Parallel Squash, Slow Pump, Hard Snare Crack, Loud & Clipped
 
 Double-click any knob to reset it.
 

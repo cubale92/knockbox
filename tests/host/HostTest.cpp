@@ -180,17 +180,53 @@ int main (int argc, char** argv)
         }
         check (finite, "random automation: output is finite");
 
-        // presets
-        bool namesOk = true;
+        // presets: each one runs 3 s of audio; level change vs. the input is measured after 0.5 s
+        bool namesOk = true, levelsOk = true, ceilingOk = true, presetFinite = true;
+        juce::StringArray seen;
+        const bool printTable = sr == 48000.0;
+        if (printTable) std::cout << "  preset levels (RMS change vs input, output peak):" << std::endl;
         for (int i = 0; i < plugin->getNumPrograms(); ++i)
         {
             plugin->setCurrentProgram (i);
-            namesOk &= plugin->getProgramName (i).isNotEmpty();
-            fillTestSignal (buf, sr, pos, rng);
-            plugin->processBlock (buf, midi);
-            finite &= allFinite (buf, peak);
+            const auto name = plugin->getProgramName (i);
+            namesOk &= name.isNotEmpty() && ! seen.contains (name);
+            seen.add (name);
+
+            double inSq = 0, outSq = 0; float pPeak = 0.0f;
+            const int blocks = (int) (sr * 3.0 / 512), warm = (int) (sr * 0.5 / 512);
+            for (int blk = 0; blk < blocks; ++blk)
+            {
+                fillTestSignal (buf, sr, pos, rng);
+                if (blk >= warm)
+                    for (int c = 0; c < 2; ++c)
+                        for (int k = 0; k < buf.getNumSamples(); ++k)
+                            inSq += (double) buf.getSample (c, k) * buf.getSample (c, k);
+                plugin->processBlock (buf, midi);
+                float blkPeak = 0.0f;
+                presetFinite &= allFinite (buf, blkPeak);
+                if (blk >= warm)
+                {
+                    pPeak = juce::jmax (pPeak, blkPeak);
+                    for (int c = 0; c < 2; ++c)
+                        for (int k = 0; k < buf.getNumSamples(); ++k)
+                            outSq += (double) buf.getSample (c, k) * buf.getSample (c, k);
+                }
+            }
+            const double changeDb = 10.0 * std::log10 (juce::jmax (outSq, 1e-20) / juce::jmax (inSq, 1e-20));
+            const double peakDb   = juce::Decibels::gainToDecibels ((double) pPeak, -120.0);
+            const bool levelOk = changeDb > -12.0 && changeDb < 12.0;
+            levelsOk &= levelOk;
+            if (hasCeiling) ceilingOk &= pPeak <= juce::Decibels::decibelsToGain (-0.3f) + 0.002f;
+            if (printTable)
+                std::cout << "    " << juce::String (i + 1).paddedLeft (' ', 2) << "  " << name.paddedRight (' ', 20)
+                          << (changeDb >= 0 ? " +" : " ") << juce::String (changeDb, 1) << " dB   peak "
+                          << juce::String (peakDb, 1) << " dBFS" << (levelOk ? "" : "   <-- out of range") << std::endl;
         }
-        check (namesOk && finite, "every preset loads and processes");
+        check (namesOk, "every preset has a unique name");
+        check (presetFinite, "every preset processes without NaN/Inf");
+        check (levelsOk, "every preset stays within +/-12 dB of the input level");
+        if (hasCeiling)
+            check (ceilingOk, "every preset stays under the -0.3 dBFS ceiling");
 
         // state round trip
         plugin->setCurrentProgram (3);
