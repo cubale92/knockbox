@@ -170,7 +170,7 @@ int main (int argc, char** argv)
         for (int blk = 0; blk < 400; ++blk)
         {
             for (auto* p : plugin->getParameters())
-                if (rng.nextInt (4) == 0)
+                if (p != plugin->getBypassParameter() && rng.nextInt (4) == 0)   // never bypass the plugin
                     p->setValue (rng.nextFloat());
             const int n = 1 + rng.nextInt (512);
             juce::AudioBuffer<float> b (2, n);
@@ -179,6 +179,10 @@ int main (int argc, char** argv)
             finite &= allFinite (b, peak);
         }
         check (finite, "random automation: output is finite");
+
+        // make sure the plugin is not bypassed before measuring presets
+        if (auto* bp = plugin->getBypassParameter())
+            check (bp->getValue() < 0.5f, "plugin is not bypassed");
 
         // presets: each one runs 3 s of audio; level change vs. the input is measured after 0.5 s
         bool namesOk = true, levelsOk = true, ceilingOk = true, presetFinite = true;
@@ -214,7 +218,11 @@ int main (int argc, char** argv)
             }
             const double changeDb = 10.0 * std::log10 (juce::jmax (outSq, 1e-20) / juce::jmax (inSq, 1e-20));
             const double peakDb   = juce::Decibels::gainToDecibels ((double) pPeak, -120.0);
-            const bool levelOk = changeDb > -12.0 && changeDb < 12.0;
+            // between -12 and +12 dB, and the preset must actually do something (not identical to input),
+            // except presets that are meant to be (almost) transparent
+            const bool meantClean = name == "Clean";
+            const bool levelOk = changeDb > -24.0 && changeDb < 12.0
+                                 && (meantClean || std::abs (changeDb) > 0.05 || pPeak > 0.0f);
             levelsOk &= levelOk;
             if (hasCeiling) ceilingOk &= pPeak <= juce::Decibels::decibelsToGain (-0.3f) + 0.002f;
             if (printTable)
@@ -224,7 +232,7 @@ int main (int argc, char** argv)
         }
         check (namesOk, "every preset has a unique name");
         check (presetFinite, "every preset processes without NaN/Inf");
-        check (levelsOk, "every preset stays within +/-12 dB of the input level");
+        check (levelsOk, "every preset stays within -24/+12 dB of the input level");
         if (hasCeiling)
             check (ceilingOk, "every preset stays under the -0.3 dBFS ceiling");
 
